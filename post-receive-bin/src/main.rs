@@ -1,3 +1,4 @@
+use std::ffi::OsString;
 use std::fs;
 use std::process::Command;
 
@@ -43,14 +44,27 @@ fn main() {
         any_found = true;
 
         println!("Building Dockerfile in directory `{}`", image.file_name().to_string_lossy());
-        Command::new("docker")
+        let mut image_name: OsString = "localhost:5000/".to_owned().into();
+        image_name.push(image.file_name());
+        let status = Command::new("docker")
             .arg("build")
             .arg("-t")
-            .arg(image.file_name())
+            .arg(image_name.clone())
             .arg(".")
             .current_dir(image.path())
             .status()
             .unwrap();
+        if !status.success() {
+            continue;
+        }
+        let status = Command::new("docker")
+            .arg("push")
+            .arg(image_name)
+            .status()
+            .unwrap();
+        if !status.success() {
+            continue;
+        }
     }
 
     if !any_found {
