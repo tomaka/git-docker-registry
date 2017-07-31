@@ -13,6 +13,7 @@ RUN mkdir -p /var/git && \
     git config --global --bool http.receivepack true
 COPY hook /var/git/hooks
 RUN mv /var/git/hooks/hook /var/git/hooks/update
+VOLUME ["/var/git"]
 
 # Compiling the hook binary
 RUN mkdir -p /home/rust
