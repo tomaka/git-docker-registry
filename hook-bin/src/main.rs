@@ -47,9 +47,15 @@ fn main() {
 
         any_found = true;
 
-        println!("Building Dockerfile in directory `{}`", image.file_name().to_string_lossy());
-        let mut image_name: OsString = "localhost:5000/".to_owned().into();
+        let mut image_name: OsString = if let Ok(registry) = env::var("REGISTRY_URL") {
+            format!("{}/", registry).into()
+        } else {
+            OsString::new()
+        };
         image_name.push(image.file_name());
+        println!("Building Dockerfile in directory `{}` under tag `{}`",
+                 image.file_name().to_string_lossy(),
+                 image_name.to_string_lossy());
         let status = Command::new("docker")
             .arg("build")
             .arg("-t")
@@ -62,16 +68,24 @@ fn main() {
             process::exit(1);
         }
 
-        if branch_name == "master" {
-            println!("Pushing image `{}`", image.file_name().to_string_lossy());
-            let status = Command::new("docker")
-                .arg("push")
-                .arg(image_name)
-                .status()
-                .unwrap();
-            if !status.success() {
-                continue;
+        if branch_name == "refs/heads/master" {
+            if let Ok(registry) = env::var("REGISTRY_URL") {
+                println!("Pushing image `{}`", image.file_name().to_string_lossy());
+                let status = Command::new("docker")
+                    .arg("push")
+                    .arg(image_name)
+                    .status()
+                    .unwrap();
+                if !status.success() {
+                    println!("Failed to push to registry `{}`", registry);
+                    process::exit(1);
+                }
+            } else {
+                println!("Image `{}` not pushed because the `REGISTRY_URL` environment variable \
+                          isn't set", image_name.to_string_lossy());
             }
+        } else {
+            println!("Note: only images on the master branch are pushed to the registry");
         }
     }
 

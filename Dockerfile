@@ -1,15 +1,6 @@
 FROM alpine:3.6
 RUN apk add --no-cache cargo rust git docker
 
-# Clone the registry binary and put it in `/`
-ARG REGISTRY_COMMIT=15dbd1a011dbda8da055d6cea8bc1e7705c32ead
-RUN git clone https://github.com/docker/distribution-library-image /home/registry && \
-    cd /home/registry && \
-    git reset --hard $REGISTRY_COMMIT && \
-    cp ./registry/registry / && \
-    cd /
-COPY registry-config.yml /
-
 # Compiling the proxy
 RUN mkdir -p /home/rust
 COPY proxy /home/rust/
@@ -32,4 +23,4 @@ RUN rm -rf /home/rust
 
 EXPOSE 80
 ENV PATH=/root/.cargo/bin:/usr/local/musl/bin:/usr/local/bin:/usr/bin:/bin
-CMD proxy
+ENTRYPOINT proxy
