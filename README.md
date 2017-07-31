@@ -15,5 +15,7 @@ to the given registry.
 
 ```sh
 docker service create --name git-docker-registry --mount src=git-docker-repo,dst=/var/git \
+    --mount type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock \
+    -e REGISTRY_URL=localhost:5000 --constraint node.role==manager \
     tomaka/git-docker-registry
 ```
