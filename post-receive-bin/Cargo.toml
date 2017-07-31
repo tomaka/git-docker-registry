@@ -1,0 +1,6 @@
+[package]
+name = "post-receive-bin"
+version = "0.1.0"
+authors = ["Pierre Krieger <pierre.krieger1708@gmail.com>"]
+
+[dependencies]
