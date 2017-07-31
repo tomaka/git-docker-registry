@@ -1,19 +1,19 @@
 # Git-docker-registry
 
-This image contains two things:
+This image contains a git repository served by a proxy, exposed by **port 80**.
 
-- The official Docker registry, exposed by **port 5000**.
-- A git repository served by a proxy, exposed by **port 80**.
+Note that this git repository is accessible anonymously. Therefore, **do not expose
+this port** without using a reverse proxy like traefik or nginx with HTTP authentication.
 
-Both the git repository and the registry are accessible anonymously. Therefore, **do not expose
-any port**. If you want to expose them, use a reverse proxy like traefik or nginx with HTTP
-authentication.
+Whenever you push to the git repository, a script will run. It will try to find any `Dockerfile`
+in any of the immediate children directory of the repository, and build each of them.
 
-Whenever you push to the git repository, a script will run. It will try to find any `Dockerfile`.
+If you pass the `REGISTRY_URL` environment variable, then the built images will also be pushed
+to the given registry.
 
 ## Usage
 
 ```sh
 docker service create --name git-docker-registry --mount src=git-docker-repo,dst=/var/git \
-    --mount src=git-docker-registry,dst=/var/lib/registry tomaka/git-docker-registry
+    tomaka/git-docker-registry
 ```
