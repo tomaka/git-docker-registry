@@ -1,5 +1,5 @@
 FROM alpine:3.6
-RUN apk add --no-cache cargo rust git docker ca-certificates apache2-utils
+RUN apk add --no-cache cargo rust git docker
 
 # Clone the registry binary and put it in `/`
 ARG REGISTRY_COMMIT=15dbd1a011dbda8da055d6cea8bc1e7705c32ead
