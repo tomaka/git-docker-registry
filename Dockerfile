@@ -20,13 +20,12 @@ RUN rm -rf /home/rust
 RUN mkdir -p /var/git && \
     git init --bare /var/git && \
     git config --global --bool http.receivepack true
-COPY post-receive /var/git/hooks
-RUN mkdir -p /home/local-clone && \
-    git clone /var/git /home/local-clone
+COPY hook /var/git/hooks
+RUN mv /var/git/hooks/hook /var/git/hooks/update
 
-# Compiling the post-receive binary
+# Compiling the hook binary
 RUN mkdir -p /home/rust
-COPY post-receive-bin /home/rust/
+COPY hook-bin /home/rust/
 RUN cargo install --debug --path=/home/rust
 RUN rm -rf /home/rust
 

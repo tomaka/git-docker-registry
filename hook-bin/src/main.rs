@@ -1,31 +1,35 @@
+use std::env;
 use std::ffi::OsString;
 use std::fs;
+use std::process;
 use std::process::Command;
 
-// FIXME: needs locking to avoid executing multiple times simultaneously
-
 fn main() {
-    println!("Updating the git repository clone");
+    let (branch_name, _ref_before, ref_after) = {
+        let args = env::args().collect::<Vec<_>>();
+        if args.len() < 4 {
+            println!("Expected 3 arguments");
+            process::exit(1);
+        }
+        (args[1].clone(), args[2].clone(), args[3].clone())
+    };
+
+    println!("Cloning the new reference");
+    fs::create_dir_all("/home/local-clone").unwrap();
     let status = Command::new("git")
         .env_clear()
-        .current_dir("/home/local-clone")
-        .arg("fetch")
-        .arg("origin")
+        .arg("--git-dir")
+        .arg("/var/git")
+        .arg("--work-tree")
+        .arg("/home/local-clone")
+        .arg("checkout")
+        .arg("-q")
+        .arg(ref_after)
         .status()
         .unwrap();
     if !status.success() {
-        return;
-    }
-    let status = Command::new("git")
-        .env_clear()
-        .current_dir("/home/local-clone")
-        .arg("reset")
-        .arg("--hard")
-        .arg("origin/master")
-        .status()
-        .unwrap();
-    if !status.success() {
-        return;
+        println!("git checkout failed");
+        process::exit(1);
     }
 
     println!("Trying to find docker files");
@@ -55,15 +59,19 @@ fn main() {
             .status()
             .unwrap();
         if !status.success() {
-            continue;
+            process::exit(1);
         }
-        let status = Command::new("docker")
-            .arg("push")
-            .arg(image_name)
-            .status()
-            .unwrap();
-        if !status.success() {
-            continue;
+
+        if branch_name == "master" {
+            println!("Pushing image `{}`", image.file_name().to_string_lossy());
+            let status = Command::new("docker")
+                .arg("push")
+                .arg(image_name)
+                .status()
+                .unwrap();
+            if !status.success() {
+                continue;
+            }
         }
     }
 
