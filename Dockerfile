@@ -22,5 +22,6 @@ RUN rm -rf /home/rust
 
 
 EXPOSE 80
+HEALTHCHECK --interval=5m --timeout=3s CMD curl -f http://localhost/ || exit 1
 ENV PATH=/root/.cargo/bin:/usr/local/musl/bin:/usr/local/bin:/usr/bin:/bin
 ENTRYPOINT proxy
