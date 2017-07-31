@@ -4,7 +4,7 @@ RUN apk add --no-cache cargo rust git docker
 # Compiling the proxy
 RUN mkdir -p /home/rust
 COPY proxy /home/rust/
-RUN cargo install --debug --path=/home/rust
+RUN cargo install --path=/home/rust
 RUN rm -rf /home/rust
 
 # Prepare the git repository
@@ -17,7 +17,7 @@ RUN mv /var/git/hooks/hook /var/git/hooks/update
 # Compiling the hook binary
 RUN mkdir -p /home/rust
 COPY hook-bin /home/rust/
-RUN cargo install --debug --path=/home/rust
+RUN cargo install --path=/home/rust
 RUN rm -rf /home/rust
 
 
